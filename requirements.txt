@@ -1,7 +1,6 @@
 fastapi
 uvicorn
-python-multipart
-pillow
 google-cloud-aiplatform
-vertexai
-aiofiles
+google-auth
+pydantic
+python-multipart
