@@ -37,17 +37,27 @@ vertexai.init(
 
 app = FastAPI(title="Gemini AI Backend", version="2.0")
 
-# ✅ FIXED CORS (IMPORTANT)
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Request
+from fastapi.responses import JSONResponse
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # 🔥 IMPORTANT (for now)
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+@app.middleware("http")
+async def add_cors_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
 
+@app.options("/{rest_of_path:path}")
+async def preflight_handler():
+    return JSONResponse(
+        content={},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "*",
+            "Access-Control-Allow-Headers": "*",
+        },
+    )
 # ==============================
 # 📦 MODELS
 # ==============================
