@@ -22,7 +22,7 @@ app.add_middleware(
 # 🟢 FIX: Serve index.html when you visit the main link
 @app.get("/")
 async def read_index():
-    return FileResponse('index.html')
+    return FileResponse('home.html')
 
 class Question(BaseModel):
     question: str
