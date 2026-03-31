@@ -145,7 +145,7 @@ await capture()
 return
 }
 
-const response=await fetch("https://gemini-live-multimodal-agent-wk77.vercel.app/",{
+const response=await fetch("https://gemini-live-multimodal-agent-wk77.vercel.app/ask",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({question:transcript})
@@ -183,7 +183,7 @@ let formData=new FormData()
 
 formData.append("file",blob,"frame.jpg")
 
-const res=await fetch("https://gemini-live-agent-74863738813.us-central1.run.app/vision",{
+const res=await fetch("https://gemini-live-multimodal-agent-wk77.vercel.app/vision",{
 method:"POST",
 body:formData
 })
