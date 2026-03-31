@@ -1,19 +1,16 @@
 import vertexai
-from vertexai.generative_models import GenerativeModel
-import vertexai
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from vertexai.generative_models import GenerativeModel, Part
+from fastapi.responses import FileResponse # 👈 NEW IMPORT
 
-# 1. Initialize Gemini
+# Initialize Gemini
 vertexai.init(project="gemini-live-agent-489604", location="us-central1")
 model = GenerativeModel("gemini-2.0-flash")
 
-# 2. Initialize FastAPI
 app = FastAPI()
 
-# 3. CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,12 +19,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 🟢 FIX: Serve index.html when you visit the main link
+@app.get("/")
+async def read_index():
+    return FileResponse('index.html')
+
 class Question(BaseModel):
     question: str
-
-@app.get("/")
-def home():
-    return {"message": "Gemini backend running on Vercel"}
 
 @app.post("/ask")
 async def ask_ai(q: Question):

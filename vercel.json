@@ -1,7 +1,8 @@
 {
   "rewrites": [
-    { "source": "/ask", "destination": "main.py" },
-    { "source": "/vision", "destination": "main.py" },
-    { "source": "/", "destination": "home.html" }
+    {
+      "source": "/(.*)",
+      "destination": "main.py"
+    }
   ]
 }
