@@ -38,13 +38,11 @@ vertexai.init(
 app = FastAPI(title="Gemini AI Backend", version="2.0")
 
 # ✅ FIXED CORS (IMPORTANT)
+from fastapi.middleware.cors import CORSMiddleware
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5500",
-        "http://127.0.0.1:5500",
-        "https://gemini-live-multimodal-agent.vercel.app/",  # 🔁 replace this
-    ],
+    allow_origins=["*"],  # 🔥 IMPORTANT (for now)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
