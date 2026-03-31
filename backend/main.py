@@ -33,7 +33,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5500",
         "http://127.0.0.1:5500",
-        "https://your-frontend.vercel.app",  # 🔁 replace this
+        "https://gemini-live-multimodal-agent-wk77.vercel.app/",  # 🔁 replace this
     ],
     allow_credentials=True,
     allow_methods=["*"],
