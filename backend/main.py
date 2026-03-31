@@ -18,8 +18,18 @@ MODEL_NAME = "gemini-2.0-flash"
 if not PROJECT_ID:
     raise ValueError("PROJECT_ID environment variable not set")
 
-vertexai.init(project=PROJECT_ID, location=LOCATION)
-model = GenerativeModel(MODEL_NAME)
+from google.oauth2 import service_account
+import vertexai
+
+credentials = service_account.Credentials.from_service_account_file(
+    "/etc/secrets/key.json"
+)
+
+vertexai.init(
+    project="gemini-live-agent-489604",
+    location="us-central1",
+    credentials=credentials
+)
 
 # ==============================
 # 🚀 APP INIT
@@ -33,7 +43,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5500",
         "http://127.0.0.1:5500",
-        "https://gemini-live-multimodal-agent-wk77.vercel.app/",  # 🔁 replace this
+        "https://gemini-live-multimodal-agent.vercel.app/",  # 🔁 replace this
     ],
     allow_credentials=True,
     allow_methods=["*"],
