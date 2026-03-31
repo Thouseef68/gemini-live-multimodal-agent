@@ -1,74 +1,58 @@
 import os
+import json
 import vertexai
-from fastapi import FastAPI, UploadFile, File, HTTPException, Header
+from fastapi import FastAPI, UploadFile, File, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 from vertexai.generative_models import GenerativeModel, Part
-from pathlib import Path
-from vertexai.generative_models import GenerativeModel
-# ==============================
-# 🔧 CONFIG
-# ==============================
-
-PROJECT_ID = os.getenv("PROJECT_ID")
-LOCATION = os.getenv("LOCATION", "us-central1")
-MODEL_NAME = "gemini-2.0-flash"
-
-if not PROJECT_ID:
-    raise ValueError("PROJECT_ID environment variable not set")
-
 from google.oauth2 import service_account
-import vertexai
-
-credentials = service_account.Credentials.from_service_account_file(
-    "/etc/secrets/key.json"
-)
-
-vertexai.init(
-    project="gemini-live-agent-489604",
-    location="us-central1",
-    credentials=credentials
-)
-
-model = GenerativeModel("gemini-2.0-flash")
 
 # ==============================
-# 🚀 APP INIT
+# 🔧 CONFIG & INITIALIZATION
+# ==============================
+
+PROJECT_ID = os.getenv("PROJECT_ID", "gemini-live-agent-489604")
+LOCATION = os.getenv("LOCATION", "us-central1")
+# Path to your secret key on Vercel/Render
+KEY_PATH = "/etc/secrets/key.json" 
+
+try:
+    if os.path.exists(KEY_PATH):
+        credentials = service_account.Credentials.from_service_account_file(KEY_PATH)
+    else:
+        # Fallback for local testing if you use an env var instead
+        credentials_info = json.loads(os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON", "{}"))
+        if credentials_info:
+            credentials = service_account.Credentials.from_service_account_info(credentials_info)
+        else:
+            raise ValueError("No Google credentials found at /etc/secrets/key.json or in ENV")
+
+    vertexai.init(project=PROJECT_ID, location=LOCATION, credentials=credentials)
+    model = GenerativeModel("gemini-2.0-flash")
+except Exception as e:
+    print(f"CRITICAL INIT ERROR: {e}")
+
+# ==============================
+# 🚀 APP INIT & CORS
 # ==============================
 
 app = FastAPI(title="Gemini AI Backend", version="2.0")
 
-from fastapi import Request
-from fastapi.responses import JSONResponse
-
-@app.middleware("http")
-async def add_cors_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    return response
-
-@app.options("/{rest_of_path:path}")
-async def preflight_handler():
-    return JSONResponse(
-        content={},
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "*",
-            "Access-Control-Allow-Headers": "*",
-        },
-    )
-# ==============================
-# 📦 MODELS
-# ==============================
+# Proper CORS setup for separate Vercel hosting
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace "*" with your frontend Vercel URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class Question(BaseModel):
     question: str
 
 # ==============================
-# 🟢 ROUTES
+# 🟢 HEALTH & ROOT
 # ==============================
 
 @app.get("/health")
@@ -77,39 +61,56 @@ async def health():
 
 @app.get("/")
 async def root():
-    return {"message": "Backend is running"}
+    return {"message": "Gemini Multimodal Backend is Live"}
 
 # ==============================
-# 🤖 TEXT AI
+# 🤖 TEXT AI (/api/ask)
 # ==============================
 
-@app.post("/ask")
+@app.post("/api/ask")
 async def ask_ai(q: Question):
     try:
-        prompt = f"""
-        You are a helpful AI assistant.
-        Answer clearly and concisely.
-
-        Question: {q.question}
-        """
-
+        prompt = f"Answer clearly and concisely: {q.question}"
         response = model.generate_content(prompt)
 
         if not response.text:
-            raise ValueError("Empty response from model")
+            raise ValueError("Empty response from Gemini")
 
         return {"answer": response.text}
 
     except Exception as e:
-        print("ERROR /ask:", str(e))
+        print(f"ERROR /api/ask: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# ==============================
+# 🖼️ IMAGE AI (/api/vision)
+# ==============================
+
+@app.post("/api/vision")
+async def vision(file: UploadFile = File(...)):
+    try:
+        if not file.content_type.startswith("image/"):
+            raise HTTPException(status_code=400, detail="Invalid file type")
+
+        contents = await file.read()
+        image_part = Part.from_data(mime_type=file.content_type, data=contents)
+
+        response = model.generate_content([
+            "Describe what you see in this image briefly for a voice response.",
+            image_part
+        ])
+
+        return {"analysis": response.text}
+
+    except Exception as e:
+        print(f"ERROR /api/vision: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # ==============================
-# ⚡ STREAMING
+# ⚡ STREAMING (/api/ask-stream)
 # ==============================
 
-@app.post("/ask-stream")
+@app.post("/api/ask-stream")
 async def ask_stream(q: Question):
     try:
         def generate():
@@ -121,60 +122,5 @@ async def ask_stream(q: Question):
         return StreamingResponse(generate(), media_type="text/plain")
 
     except Exception as e:
-        print("ERROR /ask-stream:", str(e))
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# ==============================
-# 🖼️ IMAGE AI
-# ==============================
-
-@app.post("/vision")
-async def vision(file: UploadFile = File(...)):
-    try:
-        if not file.content_type.startswith("image/"):
-            raise HTTPException(status_code=400, detail="Invalid file type")
-
-        contents = await file.read()
-
-        image_part = Part.from_data(
-            mime_type=file.content_type,
-            data=contents
-        )
-
-        response = model.generate_content([
-            "Describe this image in detail",
-            image_part
-        ])
-
-        return {"analysis": response.text}
-
-    except Exception as e:
-        print("ERROR /vision:", str(e))
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# ==============================
-# 📄 FILE ANALYSIS
-# ==============================
-
-@app.post("/analyze")
-async def analyze(file: UploadFile = File(...)):
-    try:
-        contents = await file.read()
-
-        file_part = Part.from_data(
-            mime_type=file.content_type,
-            data=contents
-        )
-
-        response = model.generate_content([
-            "Summarize this file",
-            file_part
-        ])
-
-        return {"result": response.text}
-
-    except Exception as e:
-        print("ERROR /analyze:", str(e))
+        print(f"ERROR /api/ask-stream: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

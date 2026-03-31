@@ -6,41 +6,41 @@
 
 <style>
 body{
-font-family:Arial;
-background:linear-gradient(120deg,#0f2027,#203a43,#2c5364);
-color:white;
-text-align:center;
-padding:40px;
+    font-family:Arial;
+    background:linear-gradient(120deg,#0f2027,#203a43,#2c5364);
+    color:white;
+    text-align:center;
+    padding:40px;
 }
 
 .container{
-background:rgba(255,255,255,0.08);
-backdrop-filter:blur(15px);
-padding:30px;
-border-radius:20px;
-width:650px;
-margin:auto;
-box-shadow:0 0 40px rgba(0,0,0,0.5);
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(15px);
+    padding:30px;
+    border-radius:20px;
+    width:650px;
+    margin:auto;
+    box-shadow:0 0 40px rgba(0,0,0,0.5);
 }
 
 button{
-background:#00c3ff;
-border:none;
-padding:12px 20px;
-border-radius:8px;
-margin:10px;
-cursor:pointer;
-font-size:16px;
-color:white;
+    background:#00c3ff;
+    border:none;
+    padding:12px 20px;
+    border-radius:8px;
+    margin:10px;
+    cursor:pointer;
+    font-size:16px;
+    color:white;
 }
 
 #video{
-border-radius:15px;
-box-shadow:0 0 20px #00c3ff;
+    border-radius:15px;
+    box-shadow:0 0 20px #00c3ff;
 }
 
 .section{
-margin-top:25px;
+    margin-top:25px;
 }
 </style>
 </head>
@@ -52,34 +52,35 @@ margin-top:25px;
 <h1>Gemini Live Multimodal Agent</h1>
 
 <div class="section">
-<button onclick="startVoice()">🎤 Start Voice Command</button>
+    <button onclick="startVoice()">🎤 Start Voice Command</button>
 
-<h3>You said</h3>
-<p id="userText"></p>
+    <h3>You said</h3>
+    <p id="userText"></p>
 
-<h3>AI Response</h3>
-<p id="aiResponse"></p>
+    <h3>AI Response</h3>
+    <p id="aiResponse"></p>
 </div>
 
 <div class="section">
-<h3>Live Camera Vision</h3>
-<video id="video" width="420" autoplay></video>
-<br>
+    <h3>Live Camera Vision</h3>
+    <video id="video" width="420" autoplay></video>
+    <br>
 
-<button onclick="capture()">Analyze Camera</button>
-<button onclick="startLiveVision()">Start Live Vision</button>
-<button onclick="stopLiveVision()">Stop Live Vision</button>
-<button onclick="stopAgent()">⛔ Stop Agent</button>
+    <button onclick="capture()">Analyze Camera</button>
+    <button onclick="startLiveVision()">Start Live Vision</button>
+    <button onclick="stopLiveVision()">Stop Live Vision</button>
+    <button onclick="stopAgent()">⛔ Stop Agent</button>
 
-<p id="visionResult"></p>
+    <p id="visionResult"></p>
 </div>
 
 </div>
 
 <script>
 
-// 🔥 IMPORTANT: CHANGE THIS
-
+// 🔥 CONFIGURATION
+// If your backend is on the same domain, leave this as ""
+const BASE_URL = "https://gemini-live-multimodal-agent.vercel.app/"; 
 
 // ==============================
 // 🛑 STOP EVERYTHING
@@ -118,10 +119,8 @@ function speak(text){
 // 🎤 VOICE COMMAND
 // ==============================
 function startVoice(){
-
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = "en-US";
-
     recognition.start();
 
     recognition.onresult = async function(event){
@@ -135,29 +134,27 @@ function startVoice(){
                 return;
             }
 
-            const response = await fetch("/api/ask", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ question: transcript })
-        });
-
-        document.getElementById("aiResponse").innerText = data.answer;
-
-            const speech = new SpeechSynthesisUtterance(data.answer);
-            window.speechSynthesis.speak(speech);
+            // 1. Fetch from the API
+            const response = await fetch(`${BASE_URL}/api/ask`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ question: transcript })
+            });
 
             if (!response.ok) {
-                throw new Error("Server error");
+                throw new Error(`Server error: ${response.status}`);
             }
 
+            // 2. Await the JSON data (Fixes Initialization Error)
             const data = await response.json();
 
             if (data.error) {
                 throw new Error(data.error);
             }
 
+            // 3. Update UI and Speak
             document.getElementById("aiResponse").innerText = data.answer;
             speak(data.answer);
 
@@ -172,7 +169,6 @@ function startVoice(){
 // 📸 CAPTURE IMAGE
 // ==============================
 async function capture(){
-
     try {
         const video = document.getElementById("video");
         const canvas = document.createElement("canvas");
@@ -184,11 +180,11 @@ async function capture(){
         ctx.drawImage(video, 0, 0);
 
         canvas.toBlob(async function(blob){
-
             let formData = new FormData();
             formData.append("file", blob, "frame.jpg");
 
-            const res = await fetch(`${BASE_URL}/vision`, {
+            // Use /api/vision to match standard Vercel/FastAPI routing
+            const res = await fetch(`${BASE_URL}/api/vision`, {
                 method: "POST",
                 body: formData
             });
@@ -201,7 +197,6 @@ async function capture(){
 
             document.getElementById("visionResult").innerText = data.analysis;
             speak(data.analysis);
-
         });
 
     } catch (err) {
@@ -217,7 +212,6 @@ let analyzing = false;
 
 async function startLiveVision(){
     analyzing = true;
-
     while(analyzing){
         await capture();
         await new Promise(r => setTimeout(r, 4000));
