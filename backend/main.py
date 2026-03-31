@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from vertexai.generative_models import GenerativeModel, Part
 from pathlib import Path
-
+from vertexai.generative_models import GenerativeModel
 # ==============================
 # 🔧 CONFIG
 # ==============================
@@ -30,6 +30,8 @@ vertexai.init(
     location="us-central1",
     credentials=credentials
 )
+
+model = GenerativeModel("gemini-2.0-flash")
 
 # ==============================
 # 🚀 APP INIT
