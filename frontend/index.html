@@ -79,7 +79,7 @@ margin-top:25px;
 <script>
 
 // 🔥 IMPORTANT: CHANGE THIS
-const BASE_URL = "https://gemini-live-multimodal-agent.onrender.com";
+
 
 // ==============================
 // 🛑 STOP EVERYTHING
@@ -135,11 +135,20 @@ function startVoice(){
                 return;
             }
 
-            const response = await fetch(`${BASE_URL}/ask`, {
+            const response = await fetch("/api/ask", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({question: transcript})
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ question: transcript })
             });
+
+           
+
+            document.getElementById("aiResponse").innerText = data.answer;
+
+            const speech = new SpeechSynthesisUtterance(data.answer);
+            window.speechSynthesis.speak(speech);
 
             if (!response.ok) {
                 throw new Error("Server error");
