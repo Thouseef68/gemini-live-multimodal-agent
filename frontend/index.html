@@ -136,16 +136,14 @@ function startVoice(){
             }
 
             const response = await fetch("/api/ask", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ question: transcript })
-            });
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ question: transcript })
+        });
 
-           
-
-            document.getElementById("aiResponse").innerText = data.answer;
+        document.getElementById("aiResponse").innerText = data.answer;
 
             const speech = new SpeechSynthesisUtterance(data.answer);
             window.speechSynthesis.speak(speech);
