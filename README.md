@@ -1,125 +1,99 @@
-# Gemini Live Multimodal Agent
+# 🚀 Gemini Live Multimodal Agent
 
-A real-time AI assistant that can **see, hear, and speak** using Google's Gemini model and Google Cloud.
+## 🧠 Overview
+A real-time multimodal AI agent capable of understanding and responding using vision, voice, and text.
 
-This project was created for the **Gemini Live Agent Challenge Hackathon**.
-
----
-
-# Project Overview
-
-Gemini Live Multimodal Agent is an AI system that allows users to interact with an intelligent assistant using **voice commands and real-time camera input**.
-
-The agent can:
-
-• Listen to voice commands
-• Analyze images from a webcam
-• Generate intelligent responses using Gemini
-• Speak responses back to the user
-• Run live vision analysis continuously
+Built using Google Gemini and deployed on Google Cloud, this system demonstrates next-generation human-AI interaction.
 
 ---
 
-# Key Features
+## 🔥 Key Features
 
-### Voice Interaction
+### 🎤 Voice Interaction
+- Real-time voice input using browser speech recognition  
 
-Users can speak directly to the AI assistant using browser voice recognition.
+### 👁️ Vision Understanding
+- Processes live webcam input for image analysis  
 
-### Vision Analysis
+### 🔄 Live Vision Mode
+- Continuous real-time scene understanding  
 
-The system captures webcam frames and sends them to Gemini for image understanding.
+### 🔊 Speech Output
+- AI responses converted to speech  
 
-### Live Vision Mode
-
-The AI continuously analyzes the camera feed and provides real-time explanations.
-
-### Speech Output
-
-AI responses are spoken using browser speech synthesis.
-
-### Cloud Deployment
-
-The backend is deployed on **Google Cloud Run** and communicates with **Vertex AI Gemini**.
+### ☁️ Cloud Deployment
+- Deployed on Google Cloud Run  
+- Integrated with Vertex AI (Gemini)  
 
 ---
 
-# Architecture
+## 🏗️ Architecture
 
-User (Camera + Voice)
-↓
-Web Interface (HTML + JavaScript)
-↓
-Cloud Run Backend (FastAPI)
-↓
-Vertex AI (Gemini Model)
-↓
-AI Response (Text + Speech)
-
----
-
-# Tech Stack
-
-Frontend
-• HTML
-• JavaScript
-• Web Speech API
-• Web Camera API
-
-Backend
-• FastAPI
-• Python
-
-Cloud
-• Google Cloud Run
-• Vertex AI (Gemini)
+User (Voice + Camera)  
+↓  
+Frontend (HTML + JavaScript)  
+↓  
+Backend (FastAPI - Cloud Run)  
+↓  
+Vertex AI (Gemini Model)  
+↓  
+AI Response (Text + Speech)  
 
 ---
 
-# Google Cloud Deployment
+## 🛠️ Tech Stack
 
-Backend Service URL:
+### Frontend
+- HTML  
+- JavaScript  
+- Web Speech API  
+- Web Camera API  
 
-https://gemini-live-agent-74863738813.us-central1.run.app
+### Backend
+- Python  
+- FastAPI  
+
+### Cloud
+- Google Cloud Run  
+- Vertex AI (Gemini)  
 
 ---
 
-# Running the Project Locally
+## 🌐 Live Deployment
+🔗 https://gemini-live-agent-74863738813.us-central1.run.app  
 
-1. Install Python dependencies
+---
 
+## ⚙️ Run Locally
+
+```bash
 pip install -r requirements.txt
-
-2. Start the backend
-
 uvicorn backend:app --reload
-
-3. Open the frontend
+```
 
 Open `index.html` in your browser.
 
 ---
 
-# Demo Video
-
-Demo video submitted as part of the hackathon.
-
----
-
-# Hackathon Submission
-
-This project was built for the **Gemini Live Agent Challenge** to demonstrate multimodal AI interaction combining:
-
-• Voice
-• Vision
-• Real-time reasoning
-• Cloud AI services
+## 🎥 Demo
+https://vimeo.com/1179532580?fl=ip&fe=ec
 
 ---
 
-# Future Improvements
+## 🏆 Hackathon Project
+Built for the Gemini Live Agent Challenge Hackathon.
 
-• Enhanced UI animations
-• More intelligent conversational memory
-• Mobile compatibility
-• Real-time object tracking
+---
+
+## 🚀 Future Improvements
+- Better UI/UX  
+- Conversational memory  
+- Mobile optimization  
+- Real-time object tracking  
+
+---
+
+## 💡 Impact
+Demonstrates how multimodal AI systems can enable natural human-computer interaction using real-time data.
+
+---
